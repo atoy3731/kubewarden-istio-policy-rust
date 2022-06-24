@@ -26,7 +26,7 @@ jobs:
 
     uses: kubewarden/github-actions/.github/workflows/reusable-release-policy-rust.yml@v1
     with:
-      input-wasm: kubewarden-istio-policy
+      input-wasm: kubewarden_istio_policy
       oci-target: ghcr.io/atoy3731/policies/istio
     secrets:
       workflow-pat: ${{ secrets.WORKFLOW_PAT }}
