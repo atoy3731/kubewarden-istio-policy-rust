@@ -68,6 +68,44 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
     }
 }
 
+fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult {
+    match serde_json::from_value::<apicore::Pod>(obj) {
+        Ok(pod) => {
+            let pod_name: String = pod.metadata.name.unwrap();
+
+            if pod.metadata.labels != None {
+                let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
+
+                for (k, v) in settings.excluded_pod_labels {
+                    if pod_labels.contains_key(&k) {
+                        let unwrapped_val = pod_labels.get(&k).unwrap();
+                        if &v == unwrapped_val {
+                            return kubewarden::accept_request();
+                        }
+                    }
+                }
+                // TODO: your logic goes here
+
+                return kubewarden::reject_request(
+                    Some(format!("Pod '{}' is not istio enabled.", pod_name)),
+                    None,
+                    None,
+                    None,
+                );
+            }
+
+            kubewarden::accept_request()
+        }
+        Err(_) => {
+            // TODO: handle as you wish
+            // We were forwarded a request we cannot unmarshal or
+            // understand, just accept it
+            warn!(LOG_DRAIN, "cannot unmarshal resource: this policy does not know how to evaluate this resource; accept it");
+            kubewarden::accept_request()
+        }
+    }
+}
+
 fn validate(payload: &[u8]) -> CallResult {
     let validation_request: ValidationRequest<Settings> = ValidationRequest::new(payload)?;
 
@@ -77,6 +115,10 @@ fn validate(payload: &[u8]) -> CallResult {
 
     return match kind.as_ref() {
         "Namespace" => check_namespace(
+            validation_request.settings,
+            validation_request.request.object,
+        ),
+        "Pod" => check_pod(
             validation_request.settings,
             validation_request.request.object,
         ),
@@ -129,6 +171,62 @@ mod tests {
         let request_file = "test_data/namespace-disabled.json";
         let tc = Testcase {
             name: String::from("Namespace Creation"),
+            fixture_file: String::from(request_file),
+            expected_validation_result: true,
+            settings: Settings {
+                excluded_namespaces: excluded_namespaces,
+                excluded_pod_labels: excluded_pod_labels,
+            },
+        };
+
+        let res = tc.eval(validate).unwrap();
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name,
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn deny_request_with_istio_disabled_pod() -> Result<(), ()> {
+        let excluded_namespaces = vec!["foo".to_string()];
+
+        let excluded_pod_labels =
+            HashMap::from([("istioException".to_string(), "disabled".to_string())]);
+
+        let request_file = "test_data/pod-disabled.json";
+        let tc = Testcase {
+            name: String::from("Pod Creation"),
+            fixture_file: String::from(request_file),
+            expected_validation_result: false,
+            settings: Settings {
+                excluded_namespaces: excluded_namespaces,
+                excluded_pod_labels: excluded_pod_labels,
+            },
+        };
+
+        let res = tc.eval(validate).unwrap();
+        assert!(
+            res.mutated_object.is_none(),
+            "Something mutated with test case: {}",
+            tc.name,
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn accept_request_with_istio_enabled_pod() -> Result<(), ()> {
+        let excluded_namespaces = vec!["foo".to_string()];
+
+        let excluded_pod_labels =
+            HashMap::from([("istioException".to_string(), "disabled".to_string())]);
+
+        let request_file = "test_data/pod-enabled.json";
+        let tc = Testcase {
+            name: String::from("Pod Creation"),
             fixture_file: String::from(request_file),
             expected_validation_result: true,
             settings: Settings {
