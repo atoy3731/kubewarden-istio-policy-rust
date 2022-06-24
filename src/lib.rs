@@ -35,7 +35,7 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 
             for excluded_namespace in settings.excluded_namespaces {
                 if namespace_name == excluded_namespace {
-                    return kubewarden::accept_request()
+                    return kubewarden::accept_request();
                 }
             }
 
@@ -43,7 +43,7 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 
             for (k, v) in namespace_labels {
                 if k == "istio-injection" && v == "enabled" {
-                    return kubewarden::accept_request()
+                    return kubewarden::accept_request();
                 }
             }
             // TODO: your logic goes here
