@@ -17,7 +17,6 @@ impl kubewarden::settings::Validatable for Settings {
     fn validate(&self) -> Result<(), String> {
         info!(LOG_DRAIN, "starting settings validation");
 
-
         // TODO: perform settings validation if applies
         Ok(())
     }
@@ -33,9 +32,8 @@ mod tests {
     fn validate_settings() -> Result<(), ()> {
         let excluded_namespaces = vec!["foo".to_string()];
 
-        let excluded_pod_labels = HashMap::from([
-            ("istioException".to_string(), "enabled".to_string()),
-        ]);
+        let excluded_pod_labels =
+            HashMap::from([("istioException".to_string(), "enabled".to_string())]);
 
         let settings = Settings {
             excluded_namespaces: excluded_namespaces,
