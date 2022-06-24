@@ -35,7 +35,7 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 
             for excluded_namespace in settings.excluded_namespaces {
                 if namespace_name == excluded_namespace {
-                    return kubewarden::accept_request();
+                    return kubewarden::accept_request()
                 }
             }
 
@@ -43,12 +43,12 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 
             for (k, v) in namespace_labels {
                 if k == "istio-injection" && v == "enabled" {
-                    return kubewarden::accept_request();
+                    return kubewarden::accept_request()
                 }
             }
             // TODO: your logic goes here
 
-            return kubewarden::reject_request(
+            kubewarden::reject_request(
                 Some(format!(
                     "Namespace '{}' is not istio enabled.",
                     namespace_name
@@ -56,14 +56,14 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
                 None,
                 None,
                 None,
-            );
+            )
         }
         Err(_) => {
             // TODO: handle as you wish
             // We were forwarded a request we cannot unmarshal or
             // understand, just accept it
             warn!(LOG_DRAIN, "cannot unmarshal resource: this policy does not know how to evaluate this resource; accept it");
-            return kubewarden::accept_request();
+            kubewarden::accept_request()
         }
     }
 }
@@ -75,15 +75,13 @@ fn validate(payload: &[u8]) -> CallResult {
 
     let kind: String = validation_request.request.kind.kind;
 
-    let resp = match kind.as_ref() {
+    return match kind.as_ref() {
         "Namespace" => check_namespace(
             validation_request.settings,
             validation_request.request.object,
         ),
         _ => kubewarden::accept_request(),
     };
-
-    return resp;
 }
 
 #[cfg(test)]
