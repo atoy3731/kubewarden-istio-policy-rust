@@ -67,11 +67,11 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult {
     match serde_json::from_value::<apicore::Pod>(obj) {
         Ok(pod) => {
-            // let pod_name: String = pod.metadata.name.unwrap();
+            let pod_name: String = pod.metadata.name.unwrap();
+            let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
 
-            if pod.metadata.annotations != None {
+            if pod_annotations.len() > 0 {
                 let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
-                let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
 
                 for (k, v) in settings.excluded_pod_labels {
                     if pod_labels.contains_key(&k) {
@@ -83,7 +83,7 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
                 }
 
                 if pod_annotations.contains_key("sidecar.istio.io/inject") {
-                    info!(LOG_DRAIN, "We're inside");
+                    info!(LOG_DRAIN, "Pod Name: {}", pod_name);
                     //     let unwrapped_value = pod_annotations.get("sidecar.istio.io/inject").unwrap();
                     //     if unwrapped_value == "false" {
                     //         return kubewarden::reject_request(
