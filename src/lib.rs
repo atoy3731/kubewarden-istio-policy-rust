@@ -68,37 +68,42 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
     match serde_json::from_value::<apicore::Pod>(obj) {
         Ok(pod) => {
             let pod_name: String = pod.metadata.name.unwrap();
-            let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
-
-            if !pod_annotations.is_empty() {
-                let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
-
-                for (k, v) in settings.excluded_pod_labels {
-                    if pod_labels.contains_key(&k) {
-                        let unwrapped_val = pod_labels.get(&k).unwrap();
-                        if &v == unwrapped_val {
-                            return kubewarden::accept_request();
-                        }
-                    }
-                }
-
-                if pod_annotations.contains_key("sidecar.istio.io/inject") {
-                    info!(LOG_DRAIN, "Pod Name: {}", pod_name);
-                    //     let unwrapped_value = pod_annotations.get("sidecar.istio.io/inject").unwrap();
-                    //     if unwrapped_value == "false" {
-                    //         return kubewarden::reject_request(
-                    //             Some(format!("Pod '{}' is not istio enabled.", pod_name)),
-                    //             None,
-                    //             None,
-                    //             None,
-                    //         );
-                    //     }
-                }
-
-                kubewarden::accept_request()
-            } else {
-                kubewarden::accept_request()
+            for (k, v) in settings.excluded_pod_labels {
+                info!(LOG_DRAIN, "Key: {}, Value: {}", k, v);
             }
+            info!(LOG_DRAIN, "Pod Name: {}", pod_name);
+            kubewarden::accept_request()
+            // let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
+
+            // if !pod_annotations.is_empty() {
+            //     let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
+
+            //     for (k, v) in settings.excluded_pod_labels {
+            //         if pod_labels.contains_key(&k) {
+            //             let unwrapped_val = pod_labels.get(&k).unwrap();
+            //             if &v == unwrapped_val {
+            //                 return kubewarden::accept_request();
+            //             }
+            //         }
+            //     }
+
+            //     if pod_annotations.contains_key("sidecar.istio.io/inject") {
+            //         info!(LOG_DRAIN, "Pod Name: {}", pod_name);
+            //         //     let unwrapped_value = pod_annotations.get("sidecar.istio.io/inject").unwrap();
+            //         //     if unwrapped_value == "false" {
+            //         //         return kubewarden::reject_request(
+            //         //             Some(format!("Pod '{}' is not istio enabled.", pod_name)),
+            //         //             None,
+            //         //             None,
+            //         //             None,
+            //         //         );
+            //         //     }
+            //     }
+
+            //     kubewarden::accept_request()
+            // } else {
+            //     kubewarden::accept_request()
+            // }
         }
         Err(_) => {
             warn!(LOG_DRAIN, "cannot unmarshal resource: this policy does not know how to evaluate this resource; accept it");
