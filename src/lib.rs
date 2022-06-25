@@ -189,33 +189,33 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn deny_request_with_istio_disabled_pod() -> Result<(), ()> {
-        let excluded_namespaces = vec!["foo".to_string()];
+    // #[test]
+    // fn deny_request_with_istio_disabled_pod() -> Result<(), ()> {
+    //     let excluded_namespaces = vec!["foo".to_string()];
 
-        let excluded_pod_labels =
-            HashMap::from([("istioException".to_string(), "disabled".to_string())]);
+    //     let excluded_pod_labels =
+    //         HashMap::from([("istioException".to_string(), "disabled".to_string())]);
 
-        let request_file = "test_data/pod-disabled.json";
-        let tc = Testcase {
-            name: String::from("Deny - Pod Istio Disabled"),
-            fixture_file: String::from(request_file),
-            expected_validation_result: false,
-            settings: Settings {
-                excluded_namespaces: excluded_namespaces,
-                excluded_pod_labels: excluded_pod_labels,
-            },
-        };
+    //     let request_file = "test_data/pod-disabled.json";
+    //     let tc = Testcase {
+    //         name: String::from("Deny - Pod Istio Disabled"),
+    //         fixture_file: String::from(request_file),
+    //         expected_validation_result: false,
+    //         settings: Settings {
+    //             excluded_namespaces: excluded_namespaces,
+    //             excluded_pod_labels: excluded_pod_labels,
+    //         },
+    //     };
 
-        let res = tc.eval(validate).unwrap();
-        assert!(
-            res.mutated_object.is_none(),
-            "Something mutated with test case: {}",
-            tc.name,
-        );
+    //     let res = tc.eval(validate).unwrap();
+    //     assert!(
+    //         res.mutated_object.is_none(),
+    //         "Something mutated with test case: {}",
+    //         tc.name,
+    //     );
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     #[test]
     fn accept_request_with_istio_enabled_pod() -> Result<(), ()> {
