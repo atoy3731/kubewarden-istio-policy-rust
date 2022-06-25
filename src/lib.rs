@@ -82,17 +82,17 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
                     }
                 }
 
-                if pod_annotations.contains_key("sidecar.istio.io/inject") {
-                    let unwrapped_value = pod_annotations.get("sidecar.istio.io/inject").unwrap();
-                    if unwrapped_value == "false" {
-                        return kubewarden::reject_request(
-                            Some(format!("Pod '{}' is not istio enabled.", pod_name)),
-                            None,
-                            None,
-                            None,
-                        );
-                    }
-                }
+                // if pod_annotations.contains_key("sidecar.istio.io/inject") {
+                //     let unwrapped_value = pod_annotations.get("sidecar.istio.io/inject").unwrap();
+                //     if unwrapped_value == "false" {
+                //         return kubewarden::reject_request(
+                //             Some(format!("Pod '{}' is not istio enabled.", pod_name)),
+                //             None,
+                //             None,
+                //             None,
+                //         );
+                //     }
+                // }
 
                 kubewarden::accept_request()
             } else {
