@@ -15,7 +15,7 @@
             "metadata": {
                   "name": "example-pod",
                   "annotations": {
-                        "sidecar.istio.io/inject": "true"
+                        "sidecar.istio.io/inject": "false"
                   },
                   "labels": {
                         "istioException": "enabled"

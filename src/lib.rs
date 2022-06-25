@@ -46,7 +46,6 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
                     return kubewarden::accept_request();
                 }
             }
-            // TODO: your logic goes here
 
             kubewarden::reject_request(
                 Some(format!(
@@ -59,9 +58,6 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
             )
         }
         Err(_) => {
-            // TODO: handle as you wish
-            // We were forwarded a request we cannot unmarshal or
-            // understand, just accept it
             warn!(LOG_DRAIN, "cannot unmarshal resource: this policy does not know how to evaluate this resource; accept it");
             kubewarden::accept_request()
         }
@@ -73,8 +69,9 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
         Ok(pod) => {
             let pod_name: String = pod.metadata.name.unwrap();
 
-            if pod.metadata.labels != None {
+            if pod.metadata.annotations != None {
                 let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
+                let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
 
                 for (k, v) in settings.excluded_pod_labels {
                     if pod_labels.contains_key(&k) {
@@ -84,22 +81,24 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
                         }
                     }
                 }
-                // TODO: your logic goes here
 
-                return kubewarden::reject_request(
-                    Some(format!("Pod '{}' is not istio enabled.", pod_name)),
-                    None,
-                    None,
-                    None,
-                );
+                if pod_annotations.contains_key("sidecar.istio.io/inject")
+                    && pod_annotations.get("sidecar.istio.io/inject").unwrap() == "false"
+                {
+                    return kubewarden::reject_request(
+                        Some(format!("Pod '{}' is not istio enabled.", pod_name)),
+                        None,
+                        None,
+                        None,
+                    );
+                }
+
+                kubewarden::accept_request()
+            } else {
+                kubewarden::accept_request()
             }
-
-            kubewarden::accept_request()
         }
         Err(_) => {
-            // TODO: handle as you wish
-            // We were forwarded a request we cannot unmarshal or
-            // understand, just accept it
             warn!(LOG_DRAIN, "cannot unmarshal resource: this policy does not know how to evaluate this resource; accept it");
             kubewarden::accept_request()
         }
@@ -198,7 +197,7 @@ mod tests {
 
         let request_file = "test_data/pod-disabled.json";
         let tc = Testcase {
-            name: String::from("Pod Creation"),
+            name: String::from("Deny - Pod Istio Disabled"),
             fixture_file: String::from(request_file),
             expected_validation_result: false,
             settings: Settings {
