@@ -67,11 +67,11 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult {
     match serde_json::from_value::<apicore::Pod>(obj) {
         Ok(pod) => {
-            let pod_name: String = pod.metadata.name.unwrap();
+            // let pod_name: String = pod.metadata.name.unwrap();
 
             if pod.metadata.annotations != None {
                 let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
-                let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
+                // let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
 
                 for (k, v) in settings.excluded_pod_labels {
                     if pod_labels.contains_key(&k) {
