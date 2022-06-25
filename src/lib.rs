@@ -70,7 +70,7 @@ fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult
             let pod_name: String = pod.metadata.name.unwrap();
             let pod_annotations: BTreeMap<String, String> = pod.metadata.annotations.unwrap();
 
-            if pod_annotations.len() > 0 {
+            if !pod_annotations.is_empty() {
                 let pod_labels: BTreeMap<String, String> = pod.metadata.labels.unwrap();
 
                 for (k, v) in settings.excluded_pod_labels {
