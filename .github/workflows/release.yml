@@ -9,24 +9,26 @@ on:
 name: Release policy
 
 jobs:
-
-  test:
-    name: run tests and linters
-    uses: kubewarden/github-actions/.github/workflows/reusable-test-policy-rust.yml@v1
-
   release:
-    needs: test
-    permissions:
-      # Required to create GH release
-      contents: write
-      # Required to push to ghcr.io
-      packages: write
-      # Required by cosign keyless signing
-      id-token: write
-
-    uses: kubewarden/github-actions/.github/workflows/reusable-release-policy-rust.yml@v1
-    with:
-      input-wasm: kubewarden_istio_policy
-      oci-target: ghcr.io/atoy3731/policies/istio
-    secrets:
-      workflow-pat: ${{ secrets.WORKFLOW_PAT }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Install dependencies
+        uses: kubewarden/github-actions/policy-gh-action-dependencies@v1
+      -
+        name: Build and annotate policy
+        uses: kubewarden/github-actions/policy-build-rust@v1
+        with:
+          input-wasm: target/wasm32-wasi/release/kubewarden_istio_policy.wasm
+      -
+        name: Run e2e tests
+        run: |
+          make e2e-tests
+      -
+        name: Release
+        uses: kubewarden/github-actions/policy-release@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          oci-target: ghcr.io/atoy3731/policies/istio
+          workflow-pat: ${{ secrets.WORKFLOW_PAT }}
+          annotated-wasm: annotated-policy.wasm
