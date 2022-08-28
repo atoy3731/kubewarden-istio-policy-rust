@@ -67,6 +67,15 @@ fn check_namespace(settings: settings::Settings, obj: serde_json::Value) -> Call
 fn check_pod(settings: settings::Settings, obj: serde_json::Value) -> CallResult {
     match serde_json::from_value::<apicore::Pod>(obj) {
         Ok(pod) => {
+            // Check if pod's namespace is in excluded list first
+            let namespace_name: String = pod.metadata.namespace.unwrap();
+
+            for excluded_namespace in settings.excluded_namespaces {
+                if namespace_name == excluded_namespace {
+                    return kubewarden::accept_request();
+                }
+            }
+
             let pod_name: String = pod.metadata.name.unwrap();
 
             if pod.metadata.labels != None {
