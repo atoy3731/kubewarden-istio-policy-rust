@@ -13,7 +13,8 @@
             "apiVersion": "v1",
             "kind": "Pod",
             "metadata": {
-                  "name": "example-pod"
+                  "name": "example-pod",
+                  "namespace": "example-namespace"
             },
             "spec": {
                   "containers": [
