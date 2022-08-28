@@ -15,9 +15,9 @@ fmt:
 lint:
 	cargo clippy -- -D warnings
 
-# .PHONY: e2e-tests
-# e2e-tests: annotated-policy.wasm
-# 	bats e2e.bats
+.PHONY: e2e-tests
+e2e-tests: annotated-policy.wasm
+	bats e2e.bats
 
 .PHONY: test
 test: fmt lint
