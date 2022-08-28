@@ -20,10 +20,10 @@ jobs:
         uses: kubewarden/github-actions/policy-build-rust@v1
         with:
           input-wasm: target/wasm32-wasi/release/kubewarden_istio_policy.wasm
-      -
-        name: Run e2e tests
-        run: |
-          make e2e-tests
+      # -
+      #   name: Run e2e tests
+      #   run: |
+      #     make e2e-tests
       -
         name: Release
         uses: kubewarden/github-actions/policy-release@v1
